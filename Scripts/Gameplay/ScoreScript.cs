@@ -10,8 +10,6 @@ public class ScoreScript : MonoBehaviour
 
 
 {
-    public int score = 0;
-    //public TMP_Text scoreText;
     public AudioSource audioSource;
     public AudioClip audioClip;
     public AudioClip BadSound;
@@ -23,20 +21,18 @@ public class ScoreScript : MonoBehaviour
     public TMP_Text loseText;
     
     [Header("Timer")]
-    public float timeLeft = 30f; // เวลาทั้งหมด (วินาที)
     public TMP_Text timerText;   // UI แสดงเวลา
     private bool isWin = false;
 
     [Header("End Game UI")]
     public GameObject endGamePanel; // <- Panel ที่เก็บ Win/Lose + ปุ่ม
-    //public TMP_Text resultText;     // <- แสดงข้อความ Win/Lose
+    public TMP_Text resultText;     // <- แสดงขคะแนน
 
 
 
 
     void Start()
     {
-       // scoreText.text = "SCORE : " + score.ToString();
         endGamePanel.SetActive(false); // ปิด panel ก่อน
         winText.gameObject.SetActive(false);
         UpdateUI();
@@ -44,20 +40,18 @@ public class ScoreScript : MonoBehaviour
     }
     void Update()
     {
-        if (timeLeft > 0 && !isWin)
-        {
-            timeLeft -= Time.deltaTime; // นับถอยหลัง
-            if (timeLeft < 0) timeLeft = 0;
-        }
-        UpdateUI();
-         if (score >= maxScore)
+       
+          float time = GameManager.Instance.timeLeft;
+         if (ScoreManager.Instance.score >= maxScore)
         {
             YouWin();
         }
-           else if (timeLeft <= 0 && !isWin) // เวลาเหลือ 0 → แพ้
+           else if (time<= 0 && !isWin) // เวลาเหลือ 0 → แพ้
         {
             YouLose();
-        }
+            GameManager.Instance.StopGame();
+         }
+          UpdateUI();
     }
 
 
@@ -87,29 +81,29 @@ public class ScoreScript : MonoBehaviour
         {
              ScoreManager.Instance.AddScore(-5);
             Destroy(other.gameObject);
-            timeLeft -= 5f; 
-             audioSource.PlayOneShot(BadSound);
+           GameManager.Instance.timeLeft -= 5f;
+            audioSource.PlayOneShot(BadSound);
              
         }
         if (tag == "BallE")
         {
             ScoreManager.Instance.AddScore(-10);
             Destroy(other.gameObject);
-             timeLeft -= 8f; 
+            GameManager.Instance.timeLeft -= 8f; 
             audioSource.PlayOneShot(BadSound);
         }
 
-        Debug.Log("score = " + score);
+        Debug.Log("score = " + ScoreManager.Instance.score);
     }
      void UpdateUI()
     {
-        //Score Text
-        //scoreText.text = score.ToString();
-        scoreFill.fillAmount = (float)score / maxScore; 
+        //Score
+        scoreFill.fillAmount = (float)ScoreManager.Instance.score / maxScore; 
 
         //Timer
-        int minutes = Mathf.FloorToInt(timeLeft / 60);
-        int seconds = Mathf.FloorToInt(timeLeft % 60);
+        float time = GameManager.Instance.timeLeft;
+        int minutes = Mathf.FloorToInt(time / 60);
+        int seconds = Mathf.FloorToInt(time % 60);
         timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
 
     }
